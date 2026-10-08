@@ -5,7 +5,7 @@ import { useStore } from '../store';
 
 const Leaderboard = () => {
   const navigate = useNavigate();
-  const { user, score, stars, isAdmin, removeTeam } = useStore();
+  const { user, score, stars, isAdmin, removeTeam, logoutAdmin } = useStore();
 
   let displayData = [];
   if (user) {
@@ -29,8 +29,8 @@ const Leaderboard = () => {
         </h2>
         <div style={{ display: 'flex', gap: '1rem' }}>
           {isAdmin && (
-            <button className="btn btn-secondary" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }} onClick={() => navigate('/admin')}>
-               ADMIN
+            <button className="btn btn-secondary" style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }} onClick={() => { logoutAdmin(); navigate('/'); }}>
+               LOGOUT ADMIN
             </button>
           )}
           <button className="btn btn-secondary" onClick={() => navigate('/')}>

@@ -14,7 +14,7 @@ const AdminLogin = () => {
     e.preventDefault();
     if (username === 'admin' && password === 'admin123') {
       loginAdmin();
-      navigate('/admin');
+      navigate('/leaderboard');
     } else {
       setError('Invalid credentials');
     }

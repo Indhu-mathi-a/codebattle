@@ -6,7 +6,6 @@ import Dashboard from './pages/Dashboard';
 import BattleArena from './pages/BattleArena';
 import Results from './pages/Results';
 import Leaderboard from './pages/Leaderboard';
-import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';
 import { useStore } from './store';
 import { Moon, Sun } from 'lucide-react';
@@ -71,11 +70,6 @@ function App() {
         } />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/admin" element={
-          <ProtectedAdminRoute>
-            <Admin />
-          </ProtectedAdminRoute>
-        } />
       </Routes>
     </Router>
   );
