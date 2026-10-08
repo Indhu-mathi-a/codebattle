@@ -28,8 +28,8 @@ const Landing = () => {
           START BATTLE <Terminal size={20} />
         </button>
         
-        <button className="btn btn-secondary animate-slide-up" style={{ fontSize: '1.2rem', padding: '1rem 3rem', animationDelay: '0.2s' }} onClick={() => navigate('/leaderboard')}>
-          LEADERBOARD <Trophy size={20} />
+        <button className="btn btn-secondary animate-slide-up" style={{ fontSize: '1.2rem', padding: '1rem 3rem', animationDelay: '0.2s' }} onClick={() => navigate('/admin-login')}>
+          ADMIN <Trophy size={20} />
         </button>
       </div>
     </div>

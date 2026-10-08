@@ -404,6 +404,7 @@ export const useStore = create(
     (set, get) => ({
   // User Data
   user: null, // { teamName, name, regNo }
+  isAdmin: false,
   
   // Theme State
   theme: 'dark',
@@ -432,6 +433,10 @@ export const useStore = create(
       totalHintsUsed: 0
     });
   },
+  
+  loginAdmin: () => set({ isAdmin: true }),
+  logoutAdmin: () => set({ isAdmin: false }),
+  removeTeam: () => set({ user: null, score: 0, stars: 0, completedQuestions: {} }),
   
   logout: () => set({ user: null }),
 

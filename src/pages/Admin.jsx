@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Shield, Users, Database, Activity, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Shield, Users, Database, Activity, Trophy } from 'lucide-react';
 
 const Admin = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   return (
@@ -34,6 +36,13 @@ const Admin = () => {
             onClick={() => setActiveTab('teams')}
           >
             <Users size={18} /> Teams & Players
+          </button>
+          <button 
+            className="btn btn-secondary" 
+            style={{ justifyContent: 'flex-start', marginTop: '1rem', border: '1px solid var(--accent)', color: 'var(--accent)' }}
+            onClick={() => navigate('/leaderboard')}
+          >
+            <Trophy size={18} /> Live Leaderboard
           </button>
         </div>
 

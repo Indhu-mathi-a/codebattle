@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Home, Star } from 'lucide-react';
+import { Trophy, Home, Star, Trash2 } from 'lucide-react';
 import { useStore } from '../store';
 
 const Leaderboard = () => {
   const navigate = useNavigate();
-  const { user, score, stars } = useStore();
+  const { user, score, stars, isAdmin, removeTeam } = useStore();
 
   let displayData = [];
   if (user) {
@@ -27,9 +27,16 @@ const Leaderboard = () => {
         <h2 className="text-center-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
           <Trophy size={32} /> LIVE LEADERBOARD
         </h2>
-        <button className="btn btn-secondary" onClick={() => navigate('/')}>
-          <Home size={18} /> HOME
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          {isAdmin && (
+            <button className="btn btn-secondary" style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }} onClick={() => navigate('/admin')}>
+               ADMIN
+            </button>
+          )}
+          <button className="btn btn-secondary" onClick={() => navigate('/')}>
+            <Home size={18} /> HOME
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel animate-slide-up" style={{ padding: '0', overflowX: 'auto' }}>
@@ -40,6 +47,7 @@ const Leaderboard = () => {
               <th style={{ padding: '1.5rem' }}>Team</th>
               <th style={{ padding: '1.5rem', textAlign: 'right' }}>Score</th>
               <th style={{ padding: '1.5rem', textAlign: 'right' }}>Stars</th>
+              {isAdmin && <th style={{ padding: '1.5rem', textAlign: 'right' }}>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -70,11 +78,26 @@ const Leaderboard = () => {
                   <td style={{ padding: '1.5rem', textAlign: 'right', fontSize: '1.2rem', color: '#f59e0b', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.25rem' }}>
                     {row.stars} <Star size={16} fill="#f59e0b" />
                   </td>
+                  {isAdmin && (
+                    <td style={{ padding: '1.5rem', textAlign: 'right' }}>
+                      <button 
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to remove team ${row.team}?`)) {
+                            removeTeam();
+                          }
+                        }} 
+                        style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger)', color: 'var(--danger)', cursor: 'pointer', padding: '0.5rem', borderRadius: 'var(--radius-sm)', transition: 'all 0.2s ease' }}
+                        title="Remove Team"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4" style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                <td colSpan={isAdmin ? "5" : "4"} style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                   No teams have started the battle yet.
                 </td>
               </tr>

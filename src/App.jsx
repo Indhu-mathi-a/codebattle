@@ -7,14 +7,23 @@ import BattleArena from './pages/BattleArena';
 import Results from './pages/Results';
 import Leaderboard from './pages/Leaderboard';
 import Admin from './pages/Admin';
+import AdminLogin from './pages/AdminLogin';
 import { useStore } from './store';
 import { Moon, Sun } from 'lucide-react';
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const user = useStore(state => state.user);
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+// Protected Admin Route Component
+const ProtectedAdminRoute = ({ children }) => {
+  const isAdmin = useStore(state => state.isAdmin);
+  if (!isAdmin) {
+    return <Navigate to="/admin-login" replace />;
   }
   return children;
 };
@@ -61,7 +70,12 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin" element={
+          <ProtectedAdminRoute>
+            <Admin />
+          </ProtectedAdminRoute>
+        } />
       </Routes>
     </Router>
   );
