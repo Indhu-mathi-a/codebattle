@@ -48,8 +48,8 @@ const Login = () => {
   };
 
   return (
-    <div className="page-container" style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <div className="glass-panel animate-slide-up" style={{ padding: '2rem 3rem', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+    <div className="page-container container" style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <div className="glass-panel animate-slide-up p-1-mobile w-full-mobile" style={{ padding: '2rem 3rem', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '2rem' }}>
           PARTICIPANT <span className="text-gradient">LOGIN</span>
         </h2>

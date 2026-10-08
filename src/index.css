@@ -381,6 +381,10 @@ h1, h2, h3, h4, h5, h6 {
     text-align: center !important;
   }
   
+  .min-h-mobile {
+    min-height: 200px !important;
+  }
+  
   .gap-sm-mobile {
     gap: 0.5rem !important;
   }

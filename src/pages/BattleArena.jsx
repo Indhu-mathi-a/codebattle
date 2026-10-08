@@ -287,7 +287,7 @@ const BattleArena = () => {
           <div className="arena-blocks-container gap-sm-mobile" style={{ display: 'flex', gap: '1.5rem', flex: 1, minHeight: 0 }}>
             
             {/* Available Blocks */}
-            <div className="glass-panel w-full-mobile p-1-mobile" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem', minHeight: '300px' }}>
+            <div className="glass-panel w-full-mobile p-1-mobile min-h-mobile" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem', minHeight: '300px' }}>
               <h4 style={{ marginBottom: '1rem', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
                 AVAILABLE CODE BLOCKS
                 <RefreshCw size={16} style={{ cursor: 'pointer' }} onClick={() => {
@@ -317,7 +317,7 @@ const BattleArena = () => {
             </div>
 
             {/* Your Code */}
-            <div className="glass-panel w-full-mobile p-1-mobile" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem', borderColor: 'var(--primary)', minHeight: '300px' }}>
+            <div className="glass-panel w-full-mobile p-1-mobile min-h-mobile" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem', borderColor: 'var(--primary)', minHeight: '300px' }}>
               <h4 style={{ marginBottom: '1rem', color: 'var(--primary)' }}>YOUR CODE</h4>
               <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem', background: 'var(--bg-inset)', borderRadius: 'var(--radius-sm)' }}>
                 <SortableContext items={yourCode.map(b => b.id)} strategy={verticalListSortingStrategy}>
