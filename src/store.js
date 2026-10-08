@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db } from './firebase';
 
 const QUESTION_BANK = [
   {
@@ -419,24 +421,84 @@ export const useStore = create(
   // Hint State
   totalHintsUsed: 0, // Global hint counter (10 free)
 
+  // Leaderboard Data (Stores all teams)
+  leaderboardData: [], 
+
   // Actions
   login: (userData) => {
-    // Generate a sequence of questions
-    const shuffledQuestions = [...QUESTION_BANK].sort(() => 0.5 - Math.random());
-    set({ 
-      user: userData, 
-      questions: shuffledQuestions, 
-      currentQuestionIndex: 0, 
-      score: 0, 
-      stars: 0, 
-      completedQuestions: {},
-      totalHintsUsed: 0
+    set((state) => {
+      const shuffledQuestions = [...QUESTION_BANK].sort(() => 0.5 - Math.random());
+      
+      let newLeaderboard = [...(state.leaderboardData || [])];
+      const teamIndex = newLeaderboard.findIndex(t => t.teamName === userData.teamName);
+      
+      if (teamIndex === -1) {
+        newLeaderboard.push({ 
+          teamName: userData.teamName, 
+          score: 0, 
+          stars: 0, 
+          members: userData.members 
+        });
+      } else {
+        newLeaderboard[teamIndex] = {
+          ...newLeaderboard[teamIndex],
+          score: 0,
+          stars: 0,
+          members: userData.members
+        };
+      }
+
+      // Sync with Firestore
+      try {
+        setDoc(doc(db, "leaderboard", userData.teamName), {
+          teamName: userData.teamName,
+          score: 0,
+          stars: 0,
+          members: userData.members,
+          updatedAt: new Date().getTime()
+        }, { merge: true });
+      } catch (error) {
+        console.error("Firestore sync error:", error);
+      }
+
+      return { 
+        user: userData, 
+        questions: shuffledQuestions, 
+        currentQuestionIndex: 0, 
+        score: 0, 
+        stars: 0, 
+        completedQuestions: {},
+        totalHintsUsed: 0,
+        leaderboardData: newLeaderboard
+      };
     });
   },
   
   loginAdmin: () => set({ isAdmin: true }),
   logoutAdmin: () => set({ isAdmin: false }),
-  removeTeam: () => set({ user: null, score: 0, stars: 0, completedQuestions: {} }),
+  removeTeam: (teamName) => set((state) => {
+    const newLeaderboard = (state.leaderboardData || []).filter(t => t.teamName !== teamName);
+    const isCurrentUser = state.user && state.user.teamName === teamName;
+    
+    // Remove from Firestore
+    try {
+      deleteDoc(doc(db, "leaderboard", teamName));
+    } catch (error) {
+      console.error("Firestore sync error:", error);
+    }
+
+    if (isCurrentUser) {
+      return { 
+        leaderboardData: newLeaderboard,
+        user: null, 
+        score: 0, 
+        stars: 0, 
+        completedQuestions: {} 
+      };
+    }
+    
+    return { leaderboardData: newLeaderboard };
+  }),
   
   logout: () => set({ user: null }),
 
@@ -466,9 +528,39 @@ export const useStore = create(
         pointsEarned = -10; // penalty
       }
       
+      const newScore = Math.max(0, state.score + pointsEarned);
+      const newStars = Math.max(0, state.stars + starEarned); // Prevent negative stars just in case
+
+      // Sync score to leaderboard local
+      let newLeaderboard = [...(state.leaderboardData || [])];
+      if (state.user) {
+        const teamIndex = newLeaderboard.findIndex(t => t.teamName === state.user.teamName);
+        if (teamIndex !== -1) {
+          newLeaderboard[teamIndex] = {
+            ...newLeaderboard[teamIndex],
+            score: newScore,
+            stars: newStars
+          };
+        }
+
+        // Sync with Firestore
+        try {
+          setDoc(doc(db, "leaderboard", state.user.teamName), {
+            teamName: state.user.teamName,
+            score: newScore,
+            stars: newStars,
+            members: state.user.members,
+            updatedAt: new Date().getTime()
+          }, { merge: true });
+        } catch (error) {
+          console.error("Firestore sync error:", error);
+        }
+      }
+      
       return {
-        score: Math.max(0, state.score + pointsEarned),
-        stars: Math.max(0, state.stars + starEarned), // Prevent negative stars just in case
+        score: newScore,
+        stars: newStars,
+        leaderboardData: newLeaderboard,
         completedQuestions: {
           ...state.completedQuestions,
           [questionId]: { isCorrect, points: pointsEarned, timeTaken, hintsUsedOnQuestion }
@@ -486,13 +578,37 @@ export const useStore = create(
   goToQuestion: (index) => set({ currentQuestionIndex: index }),
   
   resetGame: () => {
-    set((state) => ({
-      currentQuestionIndex: 0,
-      score: 0,
-      stars: 0,
-      completedQuestions: {},
-      totalHintsUsed: 0
-    }));
+    set((state) => {
+      let newLeaderboard = [...(state.leaderboardData || [])];
+      if (state.user) {
+        const teamIndex = newLeaderboard.findIndex(t => t.teamName === state.user.teamName);
+        if (teamIndex !== -1) {
+          newLeaderboard[teamIndex] = { ...newLeaderboard[teamIndex], score: 0, stars: 0 };
+        }
+
+        // Sync with Firestore
+        try {
+          setDoc(doc(db, "leaderboard", state.user.teamName), {
+            teamName: state.user.teamName,
+            score: 0,
+            stars: 0,
+            members: state.user.members,
+            updatedAt: new Date().getTime()
+          }, { merge: true });
+        } catch (error) {
+          console.error("Firestore sync error:", error);
+        }
+      }
+
+      return {
+        currentQuestionIndex: 0,
+        score: 0,
+        stars: 0,
+        completedQuestions: {},
+        totalHintsUsed: 0,
+        leaderboardData: newLeaderboard
+      };
+    });
   }
 }),
 {

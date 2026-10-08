@@ -1,16 +1,61 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Home, Star, Trash2 } from 'lucide-react';
 import { useStore } from '../store';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const Leaderboard = () => {
   const navigate = useNavigate();
-  const { user, score, stars, isAdmin, removeTeam, logoutAdmin } = useStore();
+  const { user, score, stars, isAdmin, removeTeam, logoutAdmin, leaderboardData } = useStore();
+  const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
 
-  let displayData = [];
-  if (user) {
-    displayData.push({ team: user.teamName, score: score, stars: stars, members: user.members });
+  useEffect(() => {
+    // Listen to real-time updates from Firestore
+    try {
+      const q = query(collection(db, 'leaderboard'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setGlobalLeaderboard(data);
+      }, (error) => {
+        console.error("Error fetching leaderboard:", error);
+      });
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Firebase not initialized or blocked:", err);
+    }
+  }, []);
+
+  // Merge local data with global data so it NEVER fails to show the current user
+  let mergedDataMap = new Map();
+
+  // 1. Add local fallback data
+  if (leaderboardData) {
+    leaderboardData.forEach(item => {
+      mergedDataMap.set(item.teamName, { ...item, team: item.teamName });
+    });
   }
+
+  // 2. Override with global data (Firestore is source of truth)
+  globalLeaderboard.forEach(item => {
+    mergedDataMap.set(item.teamName, { ...item, team: item.teamName });
+  });
+
+  // 3. Ensure current user's live score is perfectly synced (super fast)
+  if (user) {
+    mergedDataMap.set(user.teamName, {
+      teamName: user.teamName,
+      team: user.teamName,
+      score: score,
+      stars: stars,
+      members: user.members
+    });
+  }
+
+  let displayData = Array.from(mergedDataMap.values());
 
   displayData.sort((a, b) => b.score - a.score);
   displayData.forEach((item, index) => {
@@ -83,7 +128,7 @@ const Leaderboard = () => {
                       <button 
                         onClick={() => {
                           if (window.confirm(`Are you sure you want to remove team ${row.team}?`)) {
-                            removeTeam();
+                            removeTeam(row.team);
                           }
                         }} 
                         style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--danger)', color: 'var(--danger)', cursor: 'pointer', padding: '0.5rem', borderRadius: 'var(--radius-sm)', transition: 'all 0.2s ease' }}
